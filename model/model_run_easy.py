@@ -35,3 +35,12 @@ print('-------------------------------------------------------------------------
 print('-----------------------------', 'Run Completed!', '-----------------------------')
 print('------------------------', str(time.time() - start_time), 'seconds', '------------------------')
 print('--------------------------------------------------------------------------')
+
+# get the data for the travel time
+travel_time_df = sim_model.get_travel_time()
+scenario = '-1'
+repl = '-1'
+travel_time_df.to_csv('../experiment/scenario_' + str(scenario) + '_replication_' + str(repl) + '_travel_time.csv')
+
+waiting_time_df = sim_model.get_waiting_time()
+waiting_time_df.to_csv('../experiment/scenario_' + str(scenario) + '_replication_' + str(repl) + '_waiting_time.csv')

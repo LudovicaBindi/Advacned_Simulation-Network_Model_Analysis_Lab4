@@ -70,7 +70,7 @@ class Bridge(Infra):
         self.status = self.get_status()  # whether the bridge is broken or not
 
         self.delay_time = 0
-        self.delay_distribution = delay_dist    #self.random.randrange(0, 10)
+        self.delay_distribution = delay_dist  # self.random.randrange(0, 10)
         # print(self.delay_time)
 
     def get_status(self):
@@ -163,7 +163,6 @@ class Source(Infra):
     prob_small_truck = 0.75
     prob_mini_bus = 1
 
-
     def step(self):
         if self.model.schedule.steps % self.generation_frequency == 0:
             self.generate_vehicle()
@@ -171,8 +170,15 @@ class Source(Infra):
             self.vehicle_generated_flag = False
 
     def create_a_vehicle(self):
+        """
+        Returns a Vehicle. The different vehicles are generated according to previously stated probabilities
+        @return: returns a Vehicle
+        """
+        # "toss a coin"
         chance = self.random.random()
 
+        # according to the random value, we create a Vehicle
+        # the probabilities used here are increasing threshold
         if chance < self.prob_large_bus:
             result = LargeBus('LargeBus' + str(Source.truck_counter), self.model, self)
         elif chance < self.prob_truck:
@@ -190,7 +196,7 @@ class Source(Infra):
         Generates a truck, sets its path, increases the global and local counters
         """
         try:
-            #agent = Vehicle('Truck' + str(Source.truck_counter), self.model, self)
+            # agent = Vehicle('Truck' + str(Source.truck_counter), self.model, self)
             agent = self.create_a_vehicle()
             if agent:
                 self.model.schedule.add(agent)
@@ -279,7 +285,7 @@ class Vehicle(Agent):
         self.waiting_time = 0
         self.waited_at = None
         self.removed_at_step = None
-        self.accumulated_waiting_time = 0 # counter for the total waiting time
+        self.accumulated_waiting_time = 0  # counter for the total waiting time
 
     def __str__(self):
         return "Vehicle" + str(self.unique_id) + \
@@ -292,7 +298,7 @@ class Vehicle(Agent):
         Set the origin destination path of the vehicle
         """
         self.path_ids = self.model.get_route(self.generated_by.unique_id)
-        #print(self.path_ids)
+        # print(self.path_ids)
 
     def step(self):
         """
@@ -310,7 +316,7 @@ class Vehicle(Agent):
         """
         To print the vehicle trajectory at each step
         """
-        #print(self)
+        # print(self)
 
     def drive(self):
 
@@ -335,11 +341,10 @@ class Vehicle(Agent):
 
         next_id = self.path_ids[self.location_index]
 
-
-        #print(self.unique_id)
-        #print(distance)
+        # print(self.unique_id)
+        # print(distance)
         next_infra = self.model.schedule._agents[next_id]  # Access to protected member _agents
-        #print(next_infra)
+        # print(next_infra)
 
         if isinstance(next_infra, Sink):
             # arrive at the sink
@@ -348,7 +353,8 @@ class Vehicle(Agent):
             self.location.remove(self)
             # make sure the model takes tracks of the travel time of this truck
             self.model.data_container.insert_travel_time(self.unique_id, self.removed_at_step - self.generated_at_step,
-                                                         self.accumulated_waiting_time, self.generated_by.unique_id, next_infra.unique_id)
+                                                         self.accumulated_waiting_time, self.generated_by.unique_id,
+                                                         next_infra.unique_id, self.__class__.__name__)
             return
         elif isinstance(next_infra, Bridge):
             self.waiting_time = next_infra.get_delay_time()
@@ -357,7 +363,8 @@ class Vehicle(Agent):
                 self.arrive_at_next(next_infra, 0)
                 self.state = Vehicle.State.WAIT
                 # make sure the model takes tracks of the waiting time of this truck
-                self.model.data_container.insert_waiting_time(self.unique_id, next_infra.unique_id, self.waiting_time)
+                self.model.data_container.insert_waiting_time(self.unique_id, next_infra.unique_id, self.waiting_time,
+                                                              self.__class__.__name__)
                 self.accumulated_waiting_time += self.waiting_time  # update waiting time counter
                 return
             # else, continue driving
@@ -382,17 +389,21 @@ class Vehicle(Agent):
         self.location_offset = location_offset
         self.location.vehicle_count += 1
 
+
 class LargeBus(Vehicle):
     # 37 km/h translated into meter per min
     speed = 37 * 1000 / 60
+
 
 class Truck(Vehicle):
     # 31 km/h translated into meter per min
     speed = 31 * 1000 / 60
 
+
 class SmallTruck(Vehicle):
     # 29 km/h translated into meter per min
     speed = 29 * 1000 / 60
+
 
 class MiniBus(Vehicle):
     # 26 km/h translated into meter per min
@@ -416,46 +427,51 @@ class DataContainer:
 
     def __init__(self):
         # dataframe to put the collected information in
-        self.travel_time_df_columns = ['Truck id', 'Travel time', 'Total waiting time', 'Created at', 'Removed at']
-        self.waiting_time_df_columns = ['Truck id', 'Bridge id', 'Waiting time']
+        self.travel_time_df_columns = ['Truck id', 'Travel time', 'Total waiting time', 'Created at', 'Removed at',
+                                       'Type']
+        self.waiting_time_df_columns = ['Truck id', 'Bridge id', 'Waiting time', 'Type']
         self.travel_time_df = pd.DataFrame(columns=self.travel_time_df_columns)
         self.waiting_time_df = pd.DataFrame(columns=self.waiting_time_df_columns)
 
-    def insert_travel_time(self, truck_id, travel_time, total_waiting_time=None, created_by=None, removed_at=None):
+    def insert_travel_time(self, truck_id, travel_time, total_waiting_time=None, created_by=None, removed_at=None,
+                           type=None):
         """
-        Saves the specified travel time and the total waiting time of the given truck, along with the source that created the
-        specified truck and the sink that removed it
-        @param truck_id: the id of the truck whose travel time we want to save
-        @param travel_time: the travel time of the specified truck
-        @param total_waiting_time: the total time the specified truck had to wait
-        @param created_by: the id of the source that creates the specified truck
-        @param removed_at: the id of the sink that removes the specified truck
+        Saves the specified travel time and the total waiting time of the given vehicle, along with the source that created the
+        specified vehicle and the sink that removed it and the vehicle's type
+        @param truck_id: the id of the vehicle whose travel time we want to save
+        @param travel_time: the travel time of the specified vehicle
+        @param total_waiting_time: the total time the specified vehicle had to wait
+        @param created_by: the id of the source that creates the specified vehicle
+        @param removed_at: the id of the sink that removes the specified vehicle
+        @param type: the type of the specified vehicle
         """
-        new_row = pd.Series(data=[truck_id, travel_time, total_waiting_time, created_by, removed_at], index=self.travel_time_df_columns)
+        new_row = pd.Series(data=[truck_id, travel_time, total_waiting_time, created_by, removed_at, type],
+                            index=self.travel_time_df_columns)
         self.travel_time_df = self.travel_time_df.append(new_row, ignore_index=True)
 
-    def insert_waiting_time(self, truck_id, bridge_id, waiting_time):
+    def insert_waiting_time(self, truck_id, bridge_id, waiting_time, type=None):
         """
-        Saves the specified waiting time of the given truck at the given bridge
-        @param truck_id: the id of the truck whose waiting time we want to save
-        @param bridge_id: the id of the bridge where the given truck has waited
-        @param waiting_time: the waiting time of the given truck
+        Saves the specified waiting time of the given vehicle at the given bridge and the vehicle's type
+        @param truck_id: the id of the vehicle whose waiting time we want to save
+        @param bridge_id: the id of the bridge where the given vehicle has waited
+        @param waiting_time: the waiting time of the given vehicle
+        @param type: the type of the specified vehicle
         """
-        new_row = pd.Series(data=[truck_id, bridge_id, waiting_time], index=self.waiting_time_df_columns)
+        new_row = pd.Series(data=[truck_id, bridge_id, waiting_time, type], index=self.waiting_time_df_columns)
         self.waiting_time_df = self.waiting_time_df.append(new_row, ignore_index=True)
 
     def get_travel_time(self):
         """
-        Returns a copy of the collected information about the travel time of the trucks generated in the model and their total waiting time, along
-        with the source that created the specified truck and the sink that removed it
-        @return: a Pandas.DataFrame containing the information about trucks travel time and their total waiting time
+        Returns a copy of the collected information about the travel time of the vehicles generated in the model and their total waiting time, along
+        with the source that created the specified vehicle and the sink that removed it and the vehicle's type
+        @return: a Pandas.DataFrame containing the information about vehicles travel time and their total waiting time
         """
         return self.travel_time_df.copy(deep=True)
 
     def get_waiting_time(self):
         """
-        Returns a copy of the collected information about the waiting time of the trucks generated in the model
-        @return: a Pandas.DataFrame containing the information about trucks waiting time
+        Returns a copy of the collected information about the waiting time of the vehicles generated in the model and their type
+        @return: a Pandas.DataFrame containing the information about vehicles waiting time
         """
         return self.waiting_time_df.copy(deep=True)
 

@@ -354,16 +354,16 @@ class BangladeshModel(Model):
 
     def get_travel_time(self):
         """
-        Returns the collected information about the travel time of the trucks generated in the model and their total waiting time, along
-        with the source that created the specified truck and the sink that removed it
-        @return: a Pandas.DataFrame containing the information about trucks travel time and their total waiting time
+        Returns the collected information about the travel time of the vehicles generated in the model and their total waiting time, along
+        with the source that created the specified vehicle and the sink that removed it and he vehicle's type
+        @return: a Pandas.DataFrame containing the information about vehicles travel time and their total waiting time
         """
         return self.data_container.get_travel_time()
 
     def get_waiting_time(self):
         """
-        Returns the collected information about the waiting time of the trucks generated in the model
-        @return: a Pandas.DataFrame containing the information about trucks waiting time
+        Returns the collected information about the waiting time of the vehicles generated in the model and their type
+        @return: a Pandas.DataFrame containing the information about vehicles waiting time
         """
         return self.data_container.get_waiting_time()
 
