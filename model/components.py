@@ -157,19 +157,41 @@ class Source(Infra):
     truck_counter = 0
     generation_frequency = 5
     vehicle_generated_flag = False
+    # a series of threshold to create the different kinds of vehicles
+    prob_large_bus = 0.2
+    prob_truck = 0.5
+    prob_small_truck = 0.75
+    prob_mini_bus = 1
+
 
     def step(self):
         if self.model.schedule.steps % self.generation_frequency == 0:
-            self.generate_truck()
+            self.generate_vehicle()
         else:
             self.vehicle_generated_flag = False
 
-    def generate_truck(self):
+    def create_a_vehicle(self):
+        chance = self.random.random()
+
+        if chance < self.prob_large_bus:
+            result = LargeBus('LargeBus' + str(Source.truck_counter), self.model, self)
+        elif chance < self.prob_truck:
+            result = Truck('Truck' + str(Source.truck_counter), self.model, self)
+        elif chance < self.prob_small_truck:
+            result = SmallTruck('SmallTruck' + str(Source.truck_counter), self.model, self)
+        else:
+            # if chance <= self.prob_mini_bus
+            result = MiniBus('MiniBus' + str(Source.truck_counter), self.model, self)
+
+        return result
+
+    def generate_vehicle(self):
         """
         Generates a truck, sets its path, increases the global and local counters
         """
         try:
-            agent = Vehicle('Truck' + str(Source.truck_counter), self.model, self)
+            #agent = Vehicle('Truck' + str(Source.truck_counter), self.model, self)
+            agent = self.create_a_vehicle()
             if agent:
                 self.model.schedule.add(agent)
                 agent.set_path()
