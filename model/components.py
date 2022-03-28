@@ -403,6 +403,7 @@ class Vehicle(Agent):
         return self.speed / 2
 
     def drive(self):
+        # if we want to change back to the original function we just need to copy and paste the original drive function, the changing of the velocity part doesn't affect other parts of the code!
 
         # the distance that vehicle drives in a tick
         # speed is global now: can change to instance object when individual speed is needed
@@ -438,6 +439,21 @@ class Vehicle(Agent):
         else:
             # remain on the same object
             self.location_offset += distance
+
+    # def drive(self):
+    # # OLD VERSION OF THE DRIVE FUNCTION
+    #
+    #     # the distance that vehicle drives in a tick
+    #     # speed is global now: can change to instance object when individual speed is needed
+    #     distance = Vehicle.speed * Vehicle.step_time
+    #     distance_rest = self.location_offset + distance - self.location.length
+    #
+    #     if distance_rest > 0:
+    #         # go to the next object
+    #         self.drive_to_next(distance_rest)
+    #     else:
+    #         # remain on the same object
+    #         self.location_offset += distance
 
     def drive_to_next(self, distance):
         """

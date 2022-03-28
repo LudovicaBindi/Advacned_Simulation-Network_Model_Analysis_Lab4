@@ -74,11 +74,17 @@ canvas_width = 400
 canvas_height = 400
 
 space = SimpleCanvas(agent_portrayal, canvas_width, canvas_height)
-network = create_network(source_csv='../data/cleaned_roads.csv')
+# network = create_network(source_csv='../data/cleaned_roads.csv')
+# server = ModularServer(BangladeshModel,
+#                        [space],
+#                        "Transport Model Demo",
+#                        {"seed": 1234567, 'network': network, 'file_name': '../data/cleaned_roads.csv'})
+
+network = create_network(source_csv='../data/demo-4.csv')
 server = ModularServer(BangladeshModel,
                        [space],
                        "Transport Model Demo",
-                       {"seed": 1234567, 'network': network, 'file_name': '../data/cleaned_roads.csv'})
+                       {"seed": 1234567, 'network': network, 'file_name': '../data/demo-4.csv'})
 
 # The default port
 server.port = 8521
