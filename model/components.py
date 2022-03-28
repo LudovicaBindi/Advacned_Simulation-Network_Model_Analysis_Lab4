@@ -72,6 +72,7 @@ class Bridge(Infra):
         self.delay_time = 0
         self.delay_distribution = delay_dist  # self.random.randrange(0, 10)
         # print(self.delay_time)
+        self.last_delay_time_given = 0
 
     def get_status(self):
         """
@@ -79,6 +80,7 @@ class Bridge(Infra):
         @return: status ("broken" or "working")
         """
         if self.random.random() < self.break_prob:
+        #if self.random.random() < 1:
             status = "broken"
         else:
             status = "working"
@@ -89,6 +91,7 @@ class Bridge(Infra):
         """
         creates delay time according to bridge status and delay_distribution
         """
+
         if self.status == "broken":
             if self.delay_distribution["type"] == "triangular":
                 self.delay_time = self.random.triangular(self.delay_distribution["value-0"],
@@ -100,6 +103,25 @@ class Bridge(Infra):
                                                         self.delay_distribution["value-1"])
 
         return self.delay_time
+
+        # self.delay_time = 5
+        # return self.delay_time
+
+    def get_delay_time_traffic_jam(self):
+        """
+        Returns a waiting time for this bridge according to a FIFO logic: if there are other vehicles already waiting at
+        this bridge, then the last vehicle must wait that those vehicles go on the bridge first and then the vehicle can
+        go as well
+        @return: returns a waiting time for this bridge according to a FIFO logic
+        """
+        # if there are other vehicles waiting (it means that the bridge already assigned some delay time)
+        if self.last_delay_time_given > 0:
+            self.last_delay_time_given += 1 # add an extra delay because this last vehicle must wait for the other vehicles to live the bridge
+        else:
+            # if this vehicle is the first one to arrive, then we must get a delay time according to the conditions of the bridge
+            self.last_delay_time_given = self.get_delay_time()
+
+        return self.last_delay_time_given
 
 
 # ---------------------------------------------------------------
@@ -357,7 +379,8 @@ class Vehicle(Agent):
                                                          next_infra.unique_id, self.__class__.__name__)
             return
         elif isinstance(next_infra, Bridge):
-            self.waiting_time = next_infra.get_delay_time()
+            #self.waiting_time = next_infra.get_delay_time()
+            self.waiting_time = next_infra.get_delay_time_traffic_jam()
             if self.waiting_time > 0:
                 # arrive at the bridge and wait
                 self.arrive_at_next(next_infra, 0)
@@ -385,9 +408,17 @@ class Vehicle(Agent):
         Arrive at next_infra with the given location_offset
         """
         self.location.vehicle_count -= 1
+
+        # if this is the last vehicle waiting on a bridge, then there is no queue anymore
+        # so reset the variable that takes track of the last given waiting time
+        if isinstance(self.location, Bridge) and self.location.vehicle_count == 0:
+            self.location.last_delay_time_given = 0
+
         self.location = next_infra
         self.location_offset = location_offset
         self.location.vehicle_count += 1
+
+
 
 
 class LargeBus(Vehicle):
