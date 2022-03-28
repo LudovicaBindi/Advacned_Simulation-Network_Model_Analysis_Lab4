@@ -392,7 +392,8 @@ class Vehicle(Agent):
         Returns the increased velocity this vehicle could go
         @return: the increased velocity this vehicle could go
         """
-        return self.__class__.speed
+        # increase the velocity by 20%
+        return self.speed * 1.2 #TODO: find a reason why putting 20%?
 
     def get_new_velocity_slower(self):
         """
@@ -426,6 +427,9 @@ class Vehicle(Agent):
 
             # reset the velocity back to its average and reset the booleans because we'll see how the next road segment looks
             # before setting the velocity for that segment
+            # needed because the simpler function that get the new velocity won't cause trucks that will have way too big
+            # velocity (if we keep getting faster because we keep increasing in different segments we will have vehicles going
+            # much faster than physically possible for that kind of vehicle)
             self.speed = self.__class__.speed
             self.has_velocity_increased = False
             self.has_velocity_decreased = False
