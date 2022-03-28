@@ -181,9 +181,11 @@ class Source(Infra):
     vehicle_generated_flag = False
     # a series of threshold to create the different kinds of vehicles
     prob_large_bus = 0.2
-    prob_truck = 0.5
+    prob_heavy_truck = 0.35
+    prob_medium_truck = 0.5
     prob_small_truck = 0.75
     prob_mini_bus = 1
+    # TODO: find proper probabilities that actually match the road
 
     def step(self):
         if self.model.schedule.steps % self.generation_frequency == 0:
@@ -203,8 +205,10 @@ class Source(Infra):
         # the probabilities used here are increasing threshold
         if chance < self.prob_large_bus:
             result = LargeBus('LargeBus' + str(Source.truck_counter), self.model, self)
-        elif chance < self.prob_truck:
-            result = Truck('Truck' + str(Source.truck_counter), self.model, self)
+        elif chance < self.prob_heavy_truck:
+            result = HeavyTruck('HeavyTruck' + str(Source.truck_counter), self.model, self)
+        elif chance < self.prob_medium_truck:
+            result = MediumTruck('MediumTruck' + str(Source.truck_counter), self.model, self)
         elif chance < self.prob_small_truck:
             result = SmallTruck('SmallTruck' + str(Source.truck_counter), self.model, self)
         else:
@@ -289,6 +293,8 @@ class Vehicle(Agent):
     step_time = 1
     # average length of a vehicle
     length = 7.625 #TODO: this is in meter, are the rest of the distances in meter as well?
+    # max amount of goods that can be carried
+    max_goods = 0
 
     class State(Enum):
         DRIVE = 1
@@ -525,22 +531,27 @@ class Vehicle(Agent):
 class LargeBus(Vehicle):
     # 37 km/h translated into meter per min
     speed = 37 * 1000 / 60
+    max_goods = 9795
 
-
-class Truck(Vehicle):
+class HeavyTruck(Vehicle):
     # 31 km/h translated into meter per min
     speed = 31 * 1000 / 60
+    max_goods = 18700
 
-
-class SmallTruck(Vehicle):
-    # 29 km/h translated into meter per min
-    speed = 29 * 1000 / 60
-
+class MediumTruck(Vehicle):
+    # 31 km/h translated into meter per min
+    speed = 31 * 1000 / 60
+    max_goods = 10770
 
 class MiniBus(Vehicle):
     # 26 km/h translated into meter per min
     speed = 26 * 1000 / 60
+    max_goods = 5700
 
+class SmallTruck(Vehicle):
+    # 29 km/h translated into meter per min
+    speed = 29 * 1000 / 60
+    max_goods = 3720
 
 # ---------------------------------------------------------------
 class DataContainer:
