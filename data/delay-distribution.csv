@@ -1,0 +1,5 @@
+category,type,value-0,value-1,value-2
+over200,triangular,60,120,240
+from50to200,uniform,45,90,
+from10to50,uniform,15,60,
+under10,uniform,10,20,
