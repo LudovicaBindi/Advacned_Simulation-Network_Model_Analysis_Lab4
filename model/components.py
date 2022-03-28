@@ -359,6 +359,24 @@ class Vehicle(Agent):
         self.location = next_infra
         self.location_offset = location_offset
         self.location.vehicle_count += 1
+
+class LargeBus(Vehicle):
+    # 37 km/h translated into meter per min
+    speed = 37 * 1000 / 60
+
+class Truck(Vehicle):
+    # 31 km/h translated into meter per min
+    speed = 31 * 1000 / 60
+
+class SmallTruck(Vehicle):
+    # 29 km/h translated into meter per min
+    speed = 29 * 1000 / 60
+
+class MiniBus(Vehicle):
+    # 26 km/h translated into meter per min
+    speed = 26 * 1000 / 60
+
+
 # ---------------------------------------------------------------
 class DataContainer:
     """
