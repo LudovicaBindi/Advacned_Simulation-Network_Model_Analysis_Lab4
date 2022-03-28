@@ -311,7 +311,8 @@ class Vehicle(Agent):
         self.removed_at_step = None
         self.accumulated_waiting_time = 0  # counter for the total waiting time
         self.speed = self.__class__.speed # to take track of the velocity of this vehicle: vehicle's velocity can change!
-        self.has_velocity_changed = False # to take track if the velocity of this vehicle has changed (we don't want the velocity to change too much)
+        self.has_velocity_decreased = False # to take track if the velocity of this vehicle has changed (we don't want the velocity to change too much)
+        self.has_velocity_increased = False
 
     def __str__(self):
         return "Vehicle" + str(self.unique_id) + \
@@ -358,8 +359,8 @@ class Vehicle(Agent):
         @return: a ToChangeVelocity instance to communicate how the velocity should be changed or if it can stay the same
         """
         # make sure that vehicles don't change often velocity (so far it can change the velocity only ones)
-        if self.has_velocity_changed == True:
-            return self.ToChangeVelocity.no_change
+        # if self.has_velocity_changed == True:
+        #     return self.ToChangeVelocity.no_change
 
         # if we are at a source velocity doesn't need to change
         if isinstance(self.location, Source):
@@ -368,12 +369,20 @@ class Vehicle(Agent):
         # check if velocity needs to slow down
         if self.location.length < self.location.vehicle_count * Vehicle.length:
             # if there shouldn't be enough room for all these vehicles we can slow down
-            return self.ToChangeVelocity.slow_down
+            # if we haven't slowed down yet
+            if self.has_velocity_decreased == False:
+                return self.ToChangeVelocity.slow_down
+            # otherwise we don't change velocity
+            return self.ToChangeVelocity.no_change
 
         # check if velocity can be sped up
         if self.location.length / 2 > self.location.vehicle_count * Vehicle.length:
             # if there is enough room for all these vehicles we can slow down
-            return self.ToChangeVelocity.speed_up
+            # if we haven't sped up yet
+            if self.has_velocity_increased == False:
+                return self.ToChangeVelocity.speed_up
+            # otherwise we don't change velocity
+            return self.ToChangeVelocity.no_change
 
         # if the code arrives here, there is no need to change the velocity of the vehicle
         return self.ToChangeVelocity.no_change
@@ -403,10 +412,10 @@ class Vehicle(Agent):
         is_to_change_velocity = self.is_to_change_velocity()
         if is_to_change_velocity == self.ToChangeVelocity.speed_up:
             self.speed = self.get_new_velocity_faster()
-            self.has_velocity_changed = True
+            self.has_velocity_increased = True
         elif is_to_change_velocity == self.ToChangeVelocity.slow_down:
             self.speed = self.get_new_velocity_slower()
-            self.has_velocity_changed = True
+            self.has_velocity_decreased = True
 
         # now the velocity has changed, we compute the distance this vehicles travels
         distance = self.speed * Vehicle.step_time
@@ -414,6 +423,13 @@ class Vehicle(Agent):
 
         if distance_rest > 0:
             # go to the next object
+
+            # reset the velocity back to its average and reset the booleans because we'll see how the next road segment looks
+            # before setting the velocity for that segment
+            self.speed = self.__class__.speed
+            self.has_velocity_increased = False
+            self.has_velocity_decreased = False
+
             self.drive_to_next(distance_rest)
         else:
             # remain on the same object
