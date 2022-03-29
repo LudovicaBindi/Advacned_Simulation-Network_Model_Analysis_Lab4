@@ -284,7 +284,7 @@ class Vehicle(Agent):
     """
 
     # 48 km/h translated into meter per min
-    av_speed = 48 * 1000 / 60 # average speed for this kind of vehicle
+    normal_speed = 48 * 1000 / 60 # average speed for this kind of vehicle
     # One tick represents 1 minute
     step_time = 1
     # average length of a vehicle
@@ -312,7 +312,7 @@ class Vehicle(Agent):
         self.waited_at = None
         self.removed_at_step = None
         self.accumulated_waiting_time = 0  # counter for the total waiting time
-        self.speed = self.__class__.av_speed # to take track of the velocity of this vehicle: vehicle's velocity can change!
+        self.speed = self.__class__.normal_speed # to take track of the velocity of this vehicle: vehicle's velocity can change!
         self.has_velocity_decreased = False # to take track if the velocity of this vehicle has changed (we don't want the velocity to change too much)
         self.has_velocity_increased = False
 
@@ -414,7 +414,7 @@ class Vehicle(Agent):
         # the distance that vehicle drives in a tick
         # speed is global now: can change to instance object when individual speed is needed
 
-        #distance = Vehicle.av_speed * Vehicle.step_time
+        #distance = Vehicle.normal_speed * Vehicle.step_time
 
         # in case there is the need to change velocity, do so
         is_to_change_velocity = self.is_to_change_velocity()
@@ -437,7 +437,7 @@ class Vehicle(Agent):
             # needed because the simpler function that get the new velocity won't cause trucks that will have way too big
             # velocity (if we keep getting faster because we keep increasing in different segments we will have vehicles going
             # much faster than physically possible for that kind of vehicle)
-            self.speed = self.__class__.av_speed
+            self.speed = self.__class__.normal_speed
             self.has_velocity_increased = False
             self.has_velocity_decreased = False
 
@@ -451,7 +451,7 @@ class Vehicle(Agent):
     #
     #     # the distance that vehicle drives in a tick
     #     # speed is global now: can change to instance object when individual speed is needed
-    #     distance = Vehicle.av_speed * Vehicle.step_time
+    #     distance = Vehicle.normal_speed * Vehicle.step_time
     #     distance_rest = self.location_offset + distance - self.location.length
     #
     #     if distance_rest > 0:
@@ -536,41 +536,41 @@ class Vehicle(Agent):
 
 class LargeBus(Vehicle):
     # 37 km/h translated into meter per min
-    #av_speed = 37 * 1000 / 60
-    av_speed = 45 * 1000 / 60
-    #av_speed = 0.0005 * 1000 / 60
+    #normal_speed = 37 * 1000 / 60
+    normal_speed = 45 * 1000 / 60
+    #normal_speed = 0.0005 * 1000 / 60
     max_goods = 9795
     length = 11.080
 
 class HeavyTruck(Vehicle):
     # 31 km/h translated into meter per min
-    #av_speed = 31 * 1000 / 60
-    av_speed = 41 * 1000 / 60
-    #av_speed = 0.0005 * 1000 / 60
+    #normal_speed = 31 * 1000 / 60
+    normal_speed = 41 * 1000 / 60
+    #normal_speed = 0.0005 * 1000 / 60
     max_goods = 18700
     length = 9.010
 
 class MediumTruck(Vehicle):
     # 31 km/h translated into meter per min
-    #av_speed = 31 * 1000 / 60
-    av_speed = 41 * 1000 / 60
-    #av_speed = 0.0005 * 1000 / 60
+    #normal_speed = 31 * 1000 / 60
+    normal_speed = 41 * 1000 / 60
+    #normal_speed = 0.0005 * 1000 / 60
     max_goods = 10770
     length = 8.395
 
 class MiniBus(Vehicle):
     # 26 km/h translated into meter per min
-    #av_speed = 26 * 1000 / 60
-    av_speed = 45 * 1000 / 60
-    #av_speed = 0.0005 * 1000 / 60
+    #normal_speed = 26 * 1000 / 60
+    normal_speed = 45 * 1000 / 60
+    #normal_speed = 0.0005 * 1000 / 60
     max_goods = 5700
     length = 5.970
 
 class SmallTruck(Vehicle):
     # 29 km/h translated into meter per min
-    #av_speed = 29 * 1000 / 60
-    av_speed = 41 * 1000 / 60
-    #av_speed = 0.0005 * 1000 / 60
+    #normal_speed = 29 * 1000 / 60
+    normal_speed = 41 * 1000 / 60
+    #normal_speed = 0.0005 * 1000 / 60
     max_goods = 3720
     length = 5.000
 
