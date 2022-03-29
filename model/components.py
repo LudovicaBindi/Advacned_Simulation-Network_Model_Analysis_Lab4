@@ -72,7 +72,8 @@ class Bridge(Infra):
         self.delay_time = 0
         self.delay_distribution = delay_dist  # self.random.randrange(0, 10)
         # print(self.delay_time)
-        self.last_delay_time_given = 0
+        self.last_delay_time_given = 0 # last delay time given to a vehicle
+        self.last_vehicle_arrived = None
 
     def get_status(self):
         """
@@ -102,12 +103,21 @@ class Bridge(Infra):
                 self.delay_time = self.random.randrange(self.delay_distribution["value-0"],
                                                         self.delay_distribution["value-1"])
 
+            # make sure that the new vehicle that arrives doesn't get to wait less than the last vehicle
+            self.compare_to_least_waiting_time_and_fix()
+
         return self.delay_time
 
         # self.delay_time = 5
         # return self.delay_time
 
+    def compare_to_least_waiting_time_and_fix(self):
+        if self.last_vehicle_arrived is not None:
+            if self.delay_time < self.last_vehicle_arrived.waiting_time:
+                self.delay_time = self.last_vehicle_arrived.waiting_time + 1
+
     def get_delay_time_traffic_jam(self):
+        # Different way to implement delays
         """
         Returns a waiting time for this bridge according to a FIFO logic: if there are other vehicles already waiting at
         this bridge, then the last vehicle must wait that those vehicles go on the bridge first and then the vehicle can
@@ -122,8 +132,6 @@ class Bridge(Infra):
             self.last_delay_time_given = self.get_delay_time()
 
         return self.last_delay_time_given
-    # TODO: implement taking track of order of vehicles
-
 
 # ---------------------------------------------------------------
 class Link(Infra):
@@ -343,6 +351,8 @@ class Vehicle(Agent):
             if self.waiting_time == 0:
                 self.waited_at = self.location
                 self.state = Vehicle.State.DRIVE
+                if self.location.last_vehicle_arrived is self:
+                    self.location.last_vehicle_arrived = None
 
         if self.state == Vehicle.State.DRIVE:
             self.drive()
@@ -400,7 +410,7 @@ class Vehicle(Agent):
         @return: the increased velocity this vehicle could go
         """
         # increase the velocity by 20%
-        return self.speed * 1.2 #TODO: find a reason why putting 20%?
+        return self.speed * 1.2 # TODO: find a reason why putting 20%?
 
     def get_new_velocity_slower(self):
         """
@@ -489,6 +499,7 @@ class Vehicle(Agent):
         elif isinstance(next_infra, Bridge):
             self.waiting_time = next_infra.get_delay_time()
             #self.waiting_time = next_infra.get_delay_time_traffic_jam()
+            next_infra.last_vehicle_arrived = self
             if self.waiting_time > 0:
                 # arrive at the bridge and wait
                 self.arrive_at_next(next_infra, 0)
@@ -525,6 +536,7 @@ class Vehicle(Agent):
         # so reset the variable that takes track of the last given waiting time
         if isinstance(self.location, Bridge) and self.location.vehicle_count == 0:
             self.location.last_delay_time_given = 0
+            #self.location.last_vehicle_arrived = None
 
         self.location = next_infra
         self.location_offset = location_offset
