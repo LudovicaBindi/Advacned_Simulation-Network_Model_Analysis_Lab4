@@ -370,6 +370,8 @@ class Vehicle(Agent):
         if isinstance(self.location, Source):
             return self.ToChangeVelocity.no_change
 
+        # TODO: we are assuming 1-lane highways: increase details of this assumptioN!
+
         # check if velocity needs to slow down
         if self.location.length < self.location.vehicle_count * Vehicle.length:
             # if there shouldn't be enough room for all these vehicles we can slow down
