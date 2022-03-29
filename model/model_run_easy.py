@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore")  # to ignore depreciation warnings
 
 run_length = 7200
 
-prob_dict_all = pd.read_csv('../data/scenario-settings.csv', index_col='Scenario').to_dict('index')
+prob_dict_all = pd.read_csv('../data/scenario-weights.csv', index_col='Scenario').to_dict('index')
 
 # create the graph
 network = create_network(source_csv='../data/demo-4.csv')

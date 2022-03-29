@@ -20,7 +20,7 @@ run_length = 7200
 num_replications = 10
 # run time 1000 ticks
 # run_length = 1000
-prob_dict_all = pd.read_csv('../data/scenario-settings.csv', index_col='Scenario').to_dict('index')
+prob_dict_all = pd.read_csv('../data/scenario-weights.csv', index_col='Scenario').to_dict('index')
 
 seed = 1234567
 scenario = 1 # "allbroken"
