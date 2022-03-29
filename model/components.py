@@ -301,7 +301,7 @@ class Vehicle(Agent):
     # One tick represents 1 minute
     step_time = 1
     # average length of a vehicle
-    length = 7.625 #TODO: this is in meter, are the rest of the distances in meter as well?
+    length = 7.891 #TODO: this is in meter, are the rest of the distances in meter as well?
     # max amount of goods that can be carried
     max_goods = 0
 
@@ -551,6 +551,7 @@ class LargeBus(Vehicle):
     av_speed = 45 * 1000 / 60
     #av_speed = 0.0005 * 1000 / 60
     max_goods = 9795
+    length = 11.080
 
 class HeavyTruck(Vehicle):
     # 31 km/h translated into meter per min
@@ -558,6 +559,7 @@ class HeavyTruck(Vehicle):
     av_speed = 41 * 1000 / 60
     #av_speed = 0.0005 * 1000 / 60
     max_goods = 18700
+    length = 9.010
 
 class MediumTruck(Vehicle):
     # 31 km/h translated into meter per min
@@ -565,6 +567,7 @@ class MediumTruck(Vehicle):
     av_speed = 41 * 1000 / 60
     #av_speed = 0.0005 * 1000 / 60
     max_goods = 10770
+    length = 8.395
 
 class MiniBus(Vehicle):
     # 26 km/h translated into meter per min
@@ -572,6 +575,7 @@ class MiniBus(Vehicle):
     av_speed = 45 * 1000 / 60
     #av_speed = 0.0005 * 1000 / 60
     max_goods = 5700
+    length = 5.970
 
 class SmallTruck(Vehicle):
     # 29 km/h translated into meter per min
@@ -579,6 +583,7 @@ class SmallTruck(Vehicle):
     av_speed = 41 * 1000 / 60
     #av_speed = 0.0005 * 1000 / 60
     max_goods = 3720
+    length = 5.000
 
 # ---------------------------------------------------------------
 class DataContainer:
