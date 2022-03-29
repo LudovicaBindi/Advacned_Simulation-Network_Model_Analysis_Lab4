@@ -122,6 +122,7 @@ class Bridge(Infra):
             self.last_delay_time_given = self.get_delay_time()
 
         return self.last_delay_time_given
+    # TODO: implement taking track of order of vehicles
 
 
 # ---------------------------------------------------------------
@@ -486,8 +487,8 @@ class Vehicle(Agent):
                                                          next_infra.unique_id, self.__class__.__name__)
             return
         elif isinstance(next_infra, Bridge):
-            #self.waiting_time = next_infra.get_delay_time()
-            self.waiting_time = next_infra.get_delay_time_traffic_jam()
+            self.waiting_time = next_infra.get_delay_time()
+            #self.waiting_time = next_infra.get_delay_time_traffic_jam()
             if self.waiting_time > 0:
                 # arrive at the bridge and wait
                 self.arrive_at_next(next_infra, 0)
@@ -497,6 +498,10 @@ class Vehicle(Agent):
                                                               self.__class__.__name__)
                 self.accumulated_waiting_time += self.waiting_time  # update waiting time counter
                 return
+            else:
+                # take track if a vehicle passes on the bridge but doesn't have to wait
+                self.model.data_container.insert_waiting_time(self.unique_id, next_infra.unique_id, self.waiting_time,
+                                                              self.__class__.__name__)
             # else, continue driving
         # print('distance')
         # print(distance)
@@ -532,6 +537,7 @@ class LargeBus(Vehicle):
     # 37 km/h translated into meter per min
     speed = 37 * 1000 / 60
     max_goods = 9795
+    #TODO: find plausible velocities for the highways
 
 class HeavyTruck(Vehicle):
     # 31 km/h translated into meter per min
