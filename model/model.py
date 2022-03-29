@@ -53,11 +53,8 @@ class BangladeshModel(Model):
     sinks: list
         all sinks in the network
 
-    prob_bridges: dictionary
-        breaking probabilities per condition category
-
-    delay_dist: dictionary
-        distribution type and details per bridge length category for delay
+    delay_per_meter: float
+        minute delay per meter for broken bridges
 
     """
 
@@ -70,8 +67,9 @@ class BangladeshModel(Model):
     threshold_straight_route = 0.9
     threshold_shortest_route = 0.95
 
-    def __init__(self, seed=None, x_max=500, y_max=500, x_min=0, y_min=0, network=None,
-                 prob_bridges=defaultdict(float), delay_dist=defaultdict(str), file_name=None):
+    def __init__(self, seed=None, x_max=500, y_max=500, x_min=0, y_min=0,
+                 network=None, file_name=None,
+                 delay_per_meter=0.05):
         super().__init__(seed=seed)
         self.schedule = BaseScheduler(self)
         self.running = True
@@ -85,8 +83,7 @@ class BangladeshModel(Model):
         # save the graph of the road network
         self.network = network
 
-        self.prob_bridges = prob_bridges
-        self.delay_dist = delay_dist
+        self.delay_per_meter = delay_per_meter
 
         self.generate_model()
 
@@ -177,10 +174,9 @@ class BangladeshModel(Model):
                     # We made some changes in this part of the code.
                     # As they are now relevant for bridges, we are passing the following parameters:
                     # (1) the breaking probability based on condition
-                    # (2) delay distribution based on length
-                    delay_dist_dict = self.get_dist_dict(row['length'])
-                    agent = Bridge(row['id'], self, row['length'], name, row['road'], row['condition'],
-                                   self.prob_bridges[row['condition']], delay_dist_dict)
+                    # (2) per meter delay
+                    agent = Bridge(row['id'], self, row['length'], name, row['road'], row['break_prob'],
+                                   self.delay_per_meter)
                 elif model_type == 'link':
                     agent = Link(row['id'], self, row['length'], name, row['road'])
                 elif model_type == 'intersection':
@@ -332,19 +328,6 @@ class BangladeshModel(Model):
     #   print(path)
     # https://stackoverflow.com/questions/56657088/does-networkx-has-a-function-to-calculate-the-length-of-the-path-considering-wei
 
-    def get_dist_dict(self, length):
-        """
-        Return the probability distribution dictionary of delay based on length
-        """
-        if length > 200:
-            dict_to_return = self.delay_dist["over200"]
-        elif length > 50:
-            dict_to_return = self.delay_dist["from50to200"]
-        elif length > 10:
-            dict_to_return = self.delay_dist["from10to50"]
-        else:
-            dict_to_return = self.delay_dist["under10"]
-        return dict_to_return
 
     def step(self):
         """

@@ -15,7 +15,6 @@ warnings.filterwarnings("ignore")  # to ignore depreciation warnings
 
 run_length = 7200
 
-delay_dist = pd.read_csv('../data/delay-distribution.csv', index_col='category').to_dict('index')
 prob_dict_all = pd.read_csv('../data/scenario-settings.csv', index_col='Scenario').to_dict('index')
 
 # create the graph
@@ -28,7 +27,7 @@ scenario = 4
 #sim_model = BangladeshModel(seed=123, network=network, file_name='../data/demo-4.csv')
 #sim_model = BangladeshModel(seed=123, network=network, file_name='../data/cleaned_roads.csv')
 sim_model = BangladeshModel(seed=123, network=network,
-                            prob_bridges=prob_dict_all[str(scenario)], delay_dist=delay_dist, file_name='../data/demo-4.csv')
+                            prob_bridges=prob_dict_all[str(scenario)], file_name='../data/demo-4.csv')
 
 
 # Check if the seed is set

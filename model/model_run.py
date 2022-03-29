@@ -20,7 +20,6 @@ run_length = 7200
 num_replications = 10
 # run time 1000 ticks
 # run_length = 1000
-delay_dist = pd.read_csv('../data/delay-distribution.csv', index_col='category').to_dict('index')
 prob_dict_all = pd.read_csv('../data/scenario-settings.csv', index_col='Scenario').to_dict('index')
 
 seed = 1234567
@@ -34,7 +33,7 @@ network = create_network(source_csv='../data/cleaned_roads.csv')
 start_time = time.time()
 
 sim_model = BangladeshModel(seed=seed, network=network,
-                            prob_bridges=prob_dict_all[str(scenario)], delay_dist=delay_dist, file_name='../data/cleaned_roads.csv')
+                            prob_bridges=prob_dict_all[str(scenario)], file_name='../data/cleaned_roads.csv')
 #sim_model = BangladeshModel(seed=seed, network=network, file_name='../data/cleaned_roads.csv')
 # Check if the seed is set
 print("SEED " + str(sim_model._seed))
