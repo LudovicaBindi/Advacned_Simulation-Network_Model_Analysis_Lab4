@@ -21,7 +21,6 @@ warnings.filterwarnings("ignore")  # to ignore depreciation warnings
 run_length = 7200 # run each replication for a day
 num_replications = 10
 # get the delay distributions and bridges' breaking probabilities information
-delay_dist = pd.read_csv('../data/delay-distribution.csv', index_col='category').to_dict('index')
 prob_dict_all = pd.read_csv('../data/scenario-settings.csv', index_col='Scenario').to_dict('index')
 
 network = create_network(source_csv='../data/cleaned_roads.csv')
@@ -38,9 +37,8 @@ for scenario in prob_dict_all.keys():
         start_time = time.time()
         # create the model
         sim_model = BangladeshModel(seed=seed, network=network,
-                                    prob_bridges=prob_dict_all[str(scenario)], delay_dist=delay_dist,
+                                    prob_bridges=prob_dict_all[str(scenario)],
                                     file_name='../data/cleaned_roads.csv')
-        #sim_model = BangladeshModel(seed=seed,  delay_dist=delay_dist)
 
         # Check if the seed is set
         print("SEED " + str(sim_model._seed))
@@ -66,7 +64,7 @@ start_time = time.time()
 # run a 'baseline' scenario where the probability of bridges to break down is 0
 scenario = 0
 sim_model = BangladeshModel(seed=seed, network=network,
-                            prob_bridges=prob_dict_all[str(scenario)], delay_dist=delay_dist,
+                            prob_bridges=prob_dict_all[str(scenario)],
                             file_name='../data/cleaned_roads.csv')
 # One run with given steps
 for i in range(run_length):

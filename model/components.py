@@ -44,8 +44,6 @@ class Bridge(Infra):
 
     Attributes
     __________
-    condition:
-        condition of the bridge
 
     delay_time: int
         the delay (in ticks) caused by this bridge
@@ -53,25 +51,21 @@ class Bridge(Infra):
     break_prob: float
         probability of the bridge to break
 
-    delay_dist: dictionary
-        distribution type and details to create delay time
-            delay_dist["type"]: triangular/uniform
-            delay_dist["value-x"]: xth parameter required for the distribution
+    delay_per_meter: float
+        minute delay per meter for broken bridges
 
     """
 
     def __init__(self, unique_id, model, length=0,
-                 name='Unknown', road_name='Unknown', condition='Unknown',
-                 break_prob=0, delay_dist=defaultdict(str)):
+                 name='Unknown', road_name='Unknown',
+                 break_prob=0, delay_per_meter=0.05):
         super().__init__(unique_id, model, length, name, road_name)
 
-        self.condition = condition
         self.break_prob = break_prob
         self.status = self.get_status()  # whether the bridge is broken or not
 
         self.delay_time = 0
-        self.delay_distribution = delay_dist  # self.random.randrange(0, 10)
-        # print(self.delay_time)
+        self.delay_per_meter = delay_per_meter
         self.last_delay_time_given = 0 # last delay time given to a vehicle
         self.last_vehicle_arrived = None
 
@@ -90,18 +84,11 @@ class Bridge(Infra):
 
     def get_delay_time(self):
         """
-        creates delay time according to bridge status and delay_distribution
+        creates delay time according to bridge status and delay_per_meter*length
         """
 
         if self.status == "broken":
-            if self.delay_distribution["type"] == "triangular":
-                self.delay_time = self.random.triangular(self.delay_distribution["value-0"],
-                                                         self.delay_distribution["value-1"],
-                                                         self.delay_distribution["value-2"])
-
-            elif self.delay_distribution["type"] == "uniform":
-                self.delay_time = self.random.randrange(self.delay_distribution["value-0"],
-                                                        self.delay_distribution["value-1"])
+            self.delay_time = self.random.exponential(self.length*self.delay_per_meter)
 
             # make sure that the new vehicle that arrives doesn't get to wait less than the last vehicle
             self.compare_to_least_waiting_time_and_fix()
@@ -128,7 +115,7 @@ class Bridge(Infra):
         if self.last_delay_time_given > 0:
             self.last_delay_time_given += 1 # add an extra delay because this last vehicle must wait for the other vehicles to live the bridge
         else:
-            # if this vehicle is the first one to arrive, then we must get a delay time according to the conditions of the bridge
+            # if this vehicle is the first one to arrive, then we must get a delay time
             self.last_delay_time_given = self.get_delay_time()
 
         return self.last_delay_time_given
