@@ -88,7 +88,7 @@ class Bridge(Infra):
         """
 
         if self.status == "broken":
-            self.delay_time = self.random.exponential(self.length*self.delay_per_meter)
+            self.delay_time = self.random.expovariate(1/(self.length*self.delay_per_meter))
 
             # make sure that the new vehicle that arrives doesn't get to wait less than the last vehicle
             self.compare_to_least_waiting_time_and_fix()

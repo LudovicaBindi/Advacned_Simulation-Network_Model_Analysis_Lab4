@@ -32,7 +32,7 @@ def create_network(source_csv='../data/demo-4.csv'):
             # get the type value that will be saved in the node
             type = None
             if row['model_type'] == 'bridge': # if it is a bridge, then save the condition information in the type value
-                type = row['model_type'] + '-' + row['condition']
+                type = row['model_type'] + '-' + str(row['break_prob'])
             else:
                 type = row['model_type']
 

@@ -14,19 +14,19 @@ warnings.filterwarnings("ignore")  # to ignore depreciation warnings
 
 # ---------------------------------------------------------------
 
-# run time 5 x 24 hours; 1 tick 1 minute
-# run_length = 5 * 24 * 60
+# run time 1 x 24 hours; 1 tick 1 minute
+run_length = 1 * 24 * 60 # run each replication for half a day
 
-# run time 1000 ticks
-run_length = 7200 # run each replication for a day
 num_replications = 10
 # get the delay distributions and bridges' breaking probabilities information
-prob_dict_all = pd.read_csv('../data/scenario-settings.csv', index_col='Scenario').to_dict('index')
+weight_dict = pd.read_csv('../data/scenario-weights.csv', index_col='Scenario').to_dict('index')
 
-network = create_network(source_csv='../data/cleaned_roads.csv')
+# create the graph for the baseline (BCSscore) scenario
+scenario = "BCSscore"
+network = create_network(source_csv='../data/cleaned_roads_' + scenario + '.csv')
 
 # run the simulation for each scenario
-for scenario in prob_dict_all.keys():
+for scenario in weight_dict.keys():
 
     # run for num_replications times under each scenario setting
     for repl in range(num_replications):
@@ -37,8 +37,7 @@ for scenario in prob_dict_all.keys():
         start_time = time.time()
         # create the model
         sim_model = BangladeshModel(seed=seed, network=network,
-                                    prob_bridges=prob_dict_all[str(scenario)],
-                                    file_name='../data/cleaned_roads.csv')
+                                    file_name='../data/cleaned_roads_' + scenario + '.csv')
 
         # Check if the seed is set
         print("SEED " + str(sim_model._seed))
@@ -59,13 +58,14 @@ for scenario in prob_dict_all.keys():
         waiting_time_df = sim_model.get_waiting_time()
         waiting_time_df.to_csv('../experiment/scenario_' + str(scenario) + '_replication_' + str(repl) + '_waiting_time.csv')
 
+
+"""
 # to take note of how long a replication takes
 start_time = time.time()
 # run a 'baseline' scenario where the probability of bridges to break down is 0
 scenario = 0
 sim_model = BangladeshModel(seed=seed, network=network,
-                            prob_bridges=prob_dict_all[str(scenario)],
-                            file_name='../data/cleaned_roads.csv')
+                            file_name='../data/cleaned_roads_' + scenario + '.csv')
 # One run with given steps
 for i in range(run_length):
     sim_model.step()
@@ -80,4 +80,4 @@ travel_time_df = sim_model.get_travel_time()
 travel_time_df.to_csv('../experiment/scenario_0_replication_0_travel_time.csv')
 waiting_time_df = sim_model.get_waiting_time()
 waiting_time_df.to_csv('../experiment/scenario_0_replication_0_waiting_time.csv')
-
+"""
