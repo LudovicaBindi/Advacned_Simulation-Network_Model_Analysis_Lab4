@@ -549,30 +549,35 @@ class LargeBus(Vehicle):
     # 37 km/h translated into meter per min
     #av_speed = 37 * 1000 / 60
     av_speed = 45 * 1000 / 60
+    #av_speed = 0.0005 * 1000 / 60
     max_goods = 9795
 
 class HeavyTruck(Vehicle):
     # 31 km/h translated into meter per min
     #av_speed = 31 * 1000 / 60
     av_speed = 41 * 1000 / 60
+    #av_speed = 0.0005 * 1000 / 60
     max_goods = 18700
 
 class MediumTruck(Vehicle):
     # 31 km/h translated into meter per min
     #av_speed = 31 * 1000 / 60
     av_speed = 41 * 1000 / 60
+    #av_speed = 0.0005 * 1000 / 60
     max_goods = 10770
 
 class MiniBus(Vehicle):
     # 26 km/h translated into meter per min
     #av_speed = 26 * 1000 / 60
     av_speed = 45 * 1000 / 60
+    #av_speed = 0.0005 * 1000 / 60
     max_goods = 5700
 
 class SmallTruck(Vehicle):
     # 29 km/h translated into meter per min
     #av_speed = 29 * 1000 / 60
     av_speed = 41 * 1000 / 60
+    #av_speed = 0.0005 * 1000 / 60
     max_goods = 3720
 
 # ---------------------------------------------------------------
