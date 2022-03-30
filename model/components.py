@@ -175,13 +175,21 @@ class Source(Infra):
     truck_counter = 0
     generation_frequency = 5
     vehicle_generated_flag = False
-    # a series of threshold to create the different kinds of vehicles
-    prob_large_bus = 0.2
-    prob_heavy_truck = 0.35
-    prob_medium_truck = 0.5
-    prob_small_truck = 0.75
-    prob_mini_bus = 1
-    # TODO: find proper probabilities that actually match the road
+
+    def __init__(self, unique_id, model, length=0,
+                 name='Unknown', road_name='Unknown',
+                 prob_large_bus = 0.2, prob_heavy_truck = 0.15,
+                 prob_medium_truck = 0.15, prob_small_truck = 0.25,
+                 prob_mini_bus = 0.25):
+        super().__init__(unique_id, model, length, name, road_name)
+        # the followings are increasing threshold characteristics for each road
+        # The threshold are used to create the different kinds of vehicles
+        self.prob_large_bus = prob_large_bus
+        self.prob_heavy_truck = prob_heavy_truck + self.prob_large_bus
+        self.prob_medium_truck = prob_medium_truck + self.prob_heavy_truck
+        self.prob_small_truck = prob_small_truck + self.prob_medium_truck
+        self.prob_mini_bus = prob_mini_bus + self.prob_small_truck
+
 
     def step(self):
         if self.model.schedule.steps % self.generation_frequency == 0:
@@ -638,5 +646,52 @@ class DataContainer:
         @return: a Pandas.DataFrame containing the information about vehicles waiting time
         """
         return self.waiting_time_df.copy(deep=True)
+
+# -----------------------------------------------------------
+
+def read_traffic_probabilities(source='../data/traffic_probabilities.txt'):
+    """
+    Reads the traffic probabilities contained in a txt file and returns a dictionary where roads names
+    are keys and their corresponding value is a dictionary where for each kind of Vehicle there is the
+    corresponding probability
+    :param source:
+    :return:
+    """
+    # split the strings
+    file_split = []
+    with open(source) as f:  # open the file
+        for line in f:  # read all the lines in the file
+            line = line.rstrip('\n')
+            road = line.split(',')[0]  # remove the trailing newline
+            vehicle = get_vehicle_prob(line.split(',')[1])
+            prob = line.split(',')[2]
+            file_split.append([road, vehicle, prob])
+
+    result = {}
+
+    for el in file_split:
+        if el[0] in result:
+            result[el[0]][el[1]] = float(el[2])
+        else:
+            road_dict = {el[1]: float(el[2])}
+            result[el[0]] = road_dict
+
+    return result
+
+def get_vehicle_prob(info):
+    vehicle_type = info.split('-')[1]
+    if vehicle_type == 'Heavy Truck':
+        final_key = 'HeavyTruck'
+    elif vehicle_type == 'Medium Truck':
+        final_key = 'MediumTruck'
+    elif vehicle_type == 'Small Truck':
+        final_key = 'SmallTruck'
+    elif vehicle_type == 'Large Bus':
+        final_key = 'LargeBus'
+    else:
+        # if vehicle_type == 'Medium Bus'
+        final_key = 'MiniBus'
+
+    return final_key
 
 # EOF -----------------------------------------------------------
