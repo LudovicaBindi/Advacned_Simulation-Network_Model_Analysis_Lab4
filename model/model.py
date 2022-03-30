@@ -77,7 +77,7 @@ class BangladeshModel(Model):
     file_name = '../data/cleaned_roads.csv'
     threshold_random_route = 0.5
     threshold_straight_route = 0.9
-    threshold_shortest_route = 0.95
+    threshold_shortest_route = 1
 
     def __init__(self, seed=None, x_max=500, y_max=500, x_min=0, y_min=0,
                  network=None, file_name=None, traffic_dict=None,
