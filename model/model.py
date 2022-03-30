@@ -389,6 +389,6 @@ class BangladeshModel(Model):
         """
         to change default x value based on break_prob_min and break_prob_slope
         """
-        return (self.break_prob_min + self.break_prob_slope*x)
+        return (self.break_prob_min + self.break_prob_slope * x)
 
 # EOF -----------------------------------------------------------
