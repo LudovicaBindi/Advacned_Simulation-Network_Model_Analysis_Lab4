@@ -56,6 +56,18 @@ class BangladeshModel(Model):
     delay_per_meter: float
         minute delay per meter for broken bridges
 
+    break_prob_min: float
+        the bridge data will have break probability, however we might want to experiment with what we receive.
+        instead of passing the read values directly, we will use the following formula:
+            break_prob = break_prob_min + break_prob_slope * (read_value)
+        default value for this parameter will be 0
+
+    break_prob_slope: float
+        to be used for the following formula:
+            break_prob = break_prob_min + break_prob_slope * (read_value)
+        default value for this parameter will be 1
+
+
     """
 
     step_time = 1
@@ -69,7 +81,7 @@ class BangladeshModel(Model):
 
     def __init__(self, seed=None, x_max=500, y_max=500, x_min=0, y_min=0,
                  network=None, file_name=None,
-                 delay_per_meter=0.05):
+                 delay_per_meter=0.05, break_prob_min=0, break_prob_slope=1):
         super().__init__(seed=seed)
         self.schedule = BaseScheduler(self)
         self.running = True
@@ -92,6 +104,9 @@ class BangladeshModel(Model):
 
         # to take track of the closest sink to a source
         self.shortest_short_path = {}
+
+        self.break_prob_min = break_prob_min
+        self.break_prob_slope = break_prob_slope
 
     def generate_model(self):
         """
@@ -175,7 +190,8 @@ class BangladeshModel(Model):
                     # As they are now relevant for bridges, we are passing the following parameters:
                     # (1) the breaking probability based on condition
                     # (2) per meter delay
-                    agent = Bridge(row['id'], self, row['length'], name, row['road'], row['break_prob'],
+                    agent = Bridge(row['id'], self, row['length'], name, row['road'],
+                                   self.break_prob_min + self.break_prob_slope * row['break_prob'],
                                    self.delay_per_meter)
                 elif model_type == 'link':
                     agent = Link(row['id'], self, row['length'], name, row['road'])
