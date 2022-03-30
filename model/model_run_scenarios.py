@@ -40,7 +40,8 @@ for scenario in weight_dict.keys():
         start_time = time.time()
         # create the model
         sim_model = BangladeshModel(seed=seed, network=network,
-                                    file_name='../data/cleaned_roads_' + scenario + '.csv',traffic_dict=traffic_dict)
+                                    file_name='../data/cleaned_roads_' + scenario + '.csv',
+                                    traffic_dict=traffic_dict)
 
         # Check if the seed is set
         print("SEED " + str(sim_model._seed))

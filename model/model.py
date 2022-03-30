@@ -100,6 +100,9 @@ class BangladeshModel(Model):
         # save the traffic_dict
         self.traffic_dict = traffic_dict
 
+        self.break_prob_min = break_prob_min
+        self.break_prob_slope = break_prob_slope
+
         self.generate_model()
 
         # create DataContainer to collect data
@@ -108,8 +111,7 @@ class BangladeshModel(Model):
         # to take track of the closest sink to a source
         self.shortest_short_path = {}
 
-        self.break_prob_min = break_prob_min
-        self.break_prob_slope = break_prob_slope
+
 
     def generate_model(self):
         """
@@ -208,7 +210,7 @@ class BangladeshModel(Model):
                     # (1) the breaking probability based on condition
                     # (2) per meter delay
                     agent = Bridge(row['id'], self, row['length'], name, row['road'],
-                                   self.break_prob_min + self.break_prob_slope * row['break_prob'],
+                                   self.get_break_prob(row['break_prob']),
                                    self.delay_per_meter)
                 elif model_type == 'link':
                     agent = Link(row['id'], self, row['length'], name, row['road'])
@@ -382,5 +384,11 @@ class BangladeshModel(Model):
         @return: a Pandas.DataFrame containing the information about vehicles waiting time
         """
         return self.data_container.get_waiting_time()
+
+    def get_break_prob(self, x):
+        """
+        to change default x value based on break_prob_min and break_prob_slope
+        """
+        return (self.break_prob_min + self.break_prob_slope*x)
 
 # EOF -----------------------------------------------------------
