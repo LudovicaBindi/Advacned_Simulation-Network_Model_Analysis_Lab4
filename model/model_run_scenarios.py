@@ -16,74 +16,57 @@ warnings.filterwarnings("ignore")  # to ignore depreciation warnings
 # ---------------------------------------------------------------
 
 # run time 1 x 24 hours; 1 tick 1 minute
-run_length =  12 * 60 # run each replication for half a day
+run_length = 4 * 60  # run each replication for half a day
 
-num_replications = 10
+num_replications = 5
 # get the delay distributions and bridges' breaking probabilities information
 weight_dict = pd.read_csv('../data/scenario-weights.csv', index_col='Scenario').to_dict('index')
-weight_dict.pop("Cyclone")
-weight_dict.pop("Flood")
-weight_dict.pop("Erosion")
-weight_dict.pop("Earthquake")
-# create the graph for the baseline (BCSscore) scenario
+
 scenario = "BCSscore"
 network = create_network(source_csv='../data/cleaned_roads_' + scenario + '.csv')
 traffic_dict = read_traffic_probabilities(source='../data/traffic_probabilities.txt')
 
-# run the simulation for each scenario
-for scenario in weight_dict.keys():
+break_prob_min_experiments = [0.01, 0.05, 0.1]
+break_prob_slope_experiments = [1, 2]  # [5, 10]
 
-    # run for num_replications times under each scenario setting
-    for repl in range(num_replications):
-        # get a seed
-        seed = random.randint(0, 100000)
+for min_setup in break_prob_min_experiments:
+    for slope_setup in break_prob_slope_experiments:
 
-        # to take note of how long a replication takes
-        start_time = time.time()
-        # create the model
-        sim_model = BangladeshModel(seed=seed, network=network,
-                                    file_name='../data/cleaned_roads_' + scenario + '.csv',
-                                    traffic_dict=traffic_dict)
+        # run the simulation for each scenario
+        for scenario in weight_dict.keys():
 
-        # Check if the seed is set
-        print("SEED " + str(sim_model._seed))
-        print("THIS RUN IS REPLICATION NUMBER", repl, "OF SCENARIO NUMBER", scenario)
-        # One run with given steps
-        for i in range(run_length):
-            sim_model.step()
-            #print("STEP", i, "COMPLETED")
+            # run for num_replications times under each scenario setting
+            for repl in range(num_replications):
+                # get a seed
+                seed = random.randint(0, 100000)
 
-        print('--------------------------------------------------------------------------')
-        print('-----------------------------', 'Run Completed!', '-----------------------------')
-        print('------------------------', str(time.time() - start_time), 'seconds', '------------------------')
-        print('--------------------------------------------------------------------------')
+                # to take note of how long a replication takes
+                start_time = time.time()
+                # create the model
+                sim_model = BangladeshModel(seed=seed, network=network,
+                                            file_name='../data/cleaned_roads_' + scenario + '.csv',
+                                            traffic_dict=traffic_dict,
+                                            break_prob_min=min_setup, break_prob_slope=slope_setup)
 
-        #export the experimental output to a “scenarioX.csv” file
-        travel_time_df = sim_model.get_travel_time()
-        travel_time_df.to_csv('../experiment/scenario_' + str(scenario) + '_replication_' + str(repl) + '_travel_time.csv')
-        waiting_time_df = sim_model.get_waiting_time()
-        waiting_time_df.to_csv('../experiment/scenario_' + str(scenario) + '_replication_' + str(repl) + '_waiting_time.csv')
+                # Check if the seed is set
+                print("SEED " + str(sim_model._seed))
+                print("THIS RUN IS REPLICATION NUMBER", repl, "OF SCENARIO NUMBER", scenario)
+                # One run with given steps
+                for i in range(run_length):
+                    sim_model.step()
+                    # print("STEP", i, "COMPLETED")
 
+                print('--------------------------------------------------------------------------')
+                print('-----------------------------', 'Run Completed!', '-----------------------------')
+                print('------------------------', str(time.time() - start_time), 'seconds', '------------------------')
+                print('--------------------------------------------------------------------------')
 
-"""
-# to take note of how long a replication takes
-start_time = time.time()
-# run a 'baseline' scenario where the probability of bridges to break down is 0
-scenario = 0
-sim_model = BangladeshModel(seed=seed, network=network,
-                            file_name='../data/cleaned_roads_' + scenario + '.csv')
-# One run with given steps
-for i in range(run_length):
-    sim_model.step()
-
-print('--------------------------------------------------------------------------')
-print('-----------------------------', 'Run Completed!', '-----------------------------')
-print('------------------------', str(time.time() - start_time), 'seconds', '------------------------')
-print('--------------------------------------------------------------------------')
-
-# export the experimental output to a “scenarioX.csv” file.
-travel_time_df = sim_model.get_travel_time()
-travel_time_df.to_csv('../experiment/scenario_0_replication_0_travel_time.csv')
-waiting_time_df = sim_model.get_waiting_time()
-waiting_time_df.to_csv('../experiment/scenario_0_replication_0_waiting_time.csv')
-"""
+                # export the experimental output to a “scenarioX.csv” file
+                travel_time_df = sim_model.get_travel_time()
+                travel_time_df.to_csv('../experiment/scenario_' + str(scenario) + '_' +
+                                      str(slope_setup) + str(min_setup) +
+                                      '_replication_' + str(repl) + '_travel_time.csv')
+                waiting_time_df = sim_model.get_waiting_time()
+                waiting_time_df.to_csv('../experiment/scenario_' + str(scenario) + '_' +
+                                       str(slope_setup) + str(min_setup) +
+                                       '_replication_' + str(repl) + '_waiting_time.csv')
