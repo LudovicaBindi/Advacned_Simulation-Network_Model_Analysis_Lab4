@@ -2,6 +2,7 @@ from model import BangladeshModel
 import pandas as pd
 import random
 from network_creation import create_network
+from components import read_traffic_probabilities
 import time
 import warnings
 
@@ -20,10 +21,12 @@ run_length =  12 * 60 # run each replication for half a day
 num_replications = 10
 # get the delay distributions and bridges' breaking probabilities information
 weight_dict = pd.read_csv('../data/scenario-weights.csv', index_col='Scenario').to_dict('index')
-
+weight_dict.pop("Cyclone")
+weight_dict.pop("Flood")
 # create the graph for the baseline (BCSscore) scenario
 scenario = "BCSscore"
 network = create_network(source_csv='../data/cleaned_roads_' + scenario + '.csv')
+traffic_dict = read_traffic_probabilities(source='../data/traffic_probabilities.txt')
 
 # run the simulation for each scenario
 for scenario in weight_dict.keys():
@@ -37,7 +40,7 @@ for scenario in weight_dict.keys():
         start_time = time.time()
         # create the model
         sim_model = BangladeshModel(seed=seed, network=network,
-                                    file_name='../data/cleaned_roads_' + scenario + '.csv')
+                                    file_name='../data/cleaned_roads_' + scenario + '.csv',traffic_dict=traffic_dict)
 
         # Check if the seed is set
         print("SEED " + str(sim_model._seed))
