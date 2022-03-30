@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore")  # to ignore depreciation warnings
 # ---------------------------------------------------------------
 
 # run time 1 x 24 hours; 1 tick 1 minute
-run_length = 1 * 24 * 60 # run each replication for half a day
+run_length =  12 * 60 # run each replication for half a day
 
 num_replications = 10
 # get the delay distributions and bridges' breaking probabilities information
