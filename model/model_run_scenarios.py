@@ -21,8 +21,9 @@ run_length =  12 * 60 # run each replication for half a day
 num_replications = 10
 # get the delay distributions and bridges' breaking probabilities information
 weight_dict = pd.read_csv('../data/scenario-weights.csv', index_col='Scenario').to_dict('index')
-weight_dict.pop("Cyclone")
-weight_dict.pop("Flood")
+weight_dict.pop("BCSscore")
+weight_dict.pop("Earthquake")
+weight_dict.pop("Erosion")
 # create the graph for the baseline (BCSscore) scenario
 scenario = "BCSscore"
 network = create_network(source_csv='../data/cleaned_roads_' + scenario + '.csv')
