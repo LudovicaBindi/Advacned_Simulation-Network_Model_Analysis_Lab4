@@ -80,7 +80,7 @@ class BangladeshModel(Model):
     threshold_shortest_route = 0.95
 
     def __init__(self, seed=None, x_max=500, y_max=500, x_min=0, y_min=0,
-                 network=None, file_name=None,
+                 network=None, file_name=None, traffic_dict=None,
                  delay_per_meter=0.05, break_prob_min=0, break_prob_slope=1):
         super().__init__(seed=seed)
         self.schedule = BaseScheduler(self)
@@ -96,6 +96,9 @@ class BangladeshModel(Model):
         self.network = network
 
         self.delay_per_meter = delay_per_meter
+
+        # save the traffic_dict
+        self.traffic_dict = traffic_dict
 
         self.generate_model()
 
@@ -175,13 +178,27 @@ class BangladeshModel(Model):
                     name = name.strip()
 
                 if model_type == 'source':
-                    agent = Source(row['id'], self, row['length'], name, row['road'])
+                    if self.traffic_dict is None:
+                        agent = Source(row['id'], self, row['length'], name, row['road'])
+                    else:
+                        road_dict = self.traffic_dict[row['road']]
+                        agent = Source(row['id'], self, row['length'], name, row['road'],
+                                       road_dict['LargeBus'], road_dict['HeavyTruck'],
+                                       road_dict['MediumTruck'], road_dict['SmallTruck'],
+                                       road_dict['MiniBus'])
                     self.sources.append(agent.unique_id)
                 elif model_type == 'sink':
                     agent = Sink(row['id'], self, row['length'], name, row['road'])
                     self.sinks.append(agent.unique_id)
                 elif model_type == 'sourcesink':
-                    agent = SourceSink(row['id'], self, row['length'], name, row['road'])
+                    if self.traffic_dict is None:
+                        agent = SourceSink(row['id'], self, row['length'], name, row['road'])
+                    else:
+                        road_dict = self.traffic_dict[row['road']]
+                        agent = SourceSink(row['id'], self, row['length'], name, row['road'],
+                                       road_dict['LargeBus'], road_dict['HeavyTruck'],
+                                       road_dict['MediumTruck'], road_dict['SmallTruck'],
+                                       road_dict['MiniBus'])
                     self.sources.append(agent.unique_id)
                     self.sinks.append(agent.unique_id)
 
