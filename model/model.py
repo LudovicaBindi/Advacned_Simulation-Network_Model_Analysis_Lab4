@@ -56,6 +56,18 @@ class BangladeshModel(Model):
     delay_per_meter: float
         minute delay per meter for broken bridges
 
+    break_prob_min: float
+        the bridge data will have break probability, however we might want to experiment with what we receive.
+        instead of passing the read values directly, we will use the following formula:
+            break_prob = break_prob_min + break_prob_slope * (read_value)
+        default value for this parameter will be 0
+
+    break_prob_slope: float
+        to be used for the following formula:
+            break_prob = break_prob_min + break_prob_slope * (read_value)
+        default value for this parameter will be 1
+
+
     """
 
     step_time = 1
@@ -65,11 +77,11 @@ class BangladeshModel(Model):
     file_name = '../data/cleaned_roads.csv'
     threshold_random_route = 0.5
     threshold_straight_route = 0.9
-    threshold_shortest_route = 0.95
+    threshold_shortest_route = 1
 
     def __init__(self, seed=None, x_max=500, y_max=500, x_min=0, y_min=0,
-                 network=None, file_name=None,
-                 delay_per_meter=0.05, traffic_dict=None):
+                 network=None, file_name=None, traffic_dict=None,
+                 delay_per_meter=0.05, break_prob_min=0, break_prob_slope=1):
         super().__init__(seed=seed)
         self.schedule = BaseScheduler(self)
         self.running = True
@@ -89,6 +101,9 @@ class BangladeshModel(Model):
         # Vehicle type per road
         self.traffic_dict = traffic_dict
 
+        self.break_prob_min = break_prob_min
+        self.break_prob_slope = break_prob_slope
+
         self.generate_model()
 
         # create DataContainer to collect data
@@ -96,6 +111,8 @@ class BangladeshModel(Model):
 
         # to take track of the closest sink to a source
         self.shortest_short_path = {}
+
+
 
     def generate_model(self):
         """
@@ -197,7 +214,8 @@ class BangladeshModel(Model):
                     # As they are now relevant for bridges, we are passing the following parameters:
                     # (1) the breaking probability based on condition
                     # (2) per meter delay
-                    agent = Bridge(row['id'], self, row['length'], name, row['road'], row['break_prob'],
+                    agent = Bridge(row['id'], self, row['length'], name, row['road'],
+                                   self.get_break_prob(row['break_prob']),
                                    self.delay_per_meter)
                 elif model_type == 'link':
                     agent = Link(row['id'], self, row['length'], name, row['road'])
@@ -377,5 +395,11 @@ class BangladeshModel(Model):
         @return: a Pandas.DataFrame containing the information about vehicles waiting time
         """
         return self.data_container.get_waiting_time()
+
+    def get_break_prob(self, x):
+        """
+        to change default x value based on break_prob_min and break_prob_slope
+        """
+        return (self.break_prob_min + self.break_prob_slope * x)
 
 # EOF -----------------------------------------------------------
