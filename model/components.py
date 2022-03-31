@@ -66,8 +66,8 @@ class Bridge(Infra):
 
         self.delay_time = 0
         self.delay_per_meter = delay_per_meter
-        self.last_delay_time_given = 0 # last delay time given to a vehicle
-        self.last_vehicle_arrived = None
+        self.last_delay_time_given = 0  # last delay time given to a vehicle
+        self.last_vehicle_arrived = None # the last vehicle that has arrived to this Bridge
 
     def get_status(self):
         """
@@ -75,7 +75,7 @@ class Bridge(Infra):
         @return: status ("broken" or "working")
         """
         if self.random.random() < self.break_prob:
-        #if self.random.random() < 1:
+            # if self.random.random() < 1:
             status = "broken"
         else:
             status = "working"
@@ -88,7 +88,7 @@ class Bridge(Infra):
         """
 
         if self.status == "broken":
-            self.delay_time = self.random.expovariate(1/(self.length*self.delay_per_meter))
+            self.delay_time = self.random.expovariate(1 / (self.length * self.delay_per_meter))
 
             # make sure that the new vehicle that arrives doesn't get to wait less than the last vehicle
             self.compare_to_least_waiting_time_and_fix()
@@ -99,6 +99,12 @@ class Bridge(Infra):
         # return self.delay_time
 
     def compare_to_least_waiting_time_and_fix(self):
+        """
+        Compares the just computed waiting time for the Vehicle that just arrived to this bridge with the time that is
+        left to wait to the last Vehicle arrived to this bridge: if the former time is smaller to the latter one, then
+        the waiting time for the next Vehicle is set to be equal to what is left to the last Vehicle arrived plus 1
+        minute (the smallest time unit understood by the model)
+        """
         if self.last_vehicle_arrived is not None:
             if self.delay_time < self.last_vehicle_arrived.waiting_time:
                 self.delay_time = self.last_vehicle_arrived.waiting_time + 1
@@ -113,12 +119,13 @@ class Bridge(Infra):
         """
         # if there are other vehicles waiting (it means that the bridge already assigned some delay time)
         if self.last_delay_time_given > 0:
-            self.last_delay_time_given += 1 # add an extra delay because this last vehicle must wait for the other vehicles to live the bridge
+            self.last_delay_time_given += 1  # add an extra delay because this last vehicle must wait for the other vehicles to live the bridge
         else:
             # if this vehicle is the first one to arrive, then we must get a delay time
             self.last_delay_time_given = self.get_delay_time()
 
         return self.last_delay_time_given
+
 
 # ---------------------------------------------------------------
 class Link(Infra):
@@ -178,9 +185,9 @@ class Source(Infra):
 
     def __init__(self, unique_id, model, length=0,
                  name='Unknown', road_name='Unknown',
-                 prob_large_bus = 0.2, prob_heavy_truck = 0.15,
-                 prob_medium_truck = 0.15, prob_small_truck = 0.25,
-                 prob_mini_bus = 0.25):
+                 prob_large_bus=0.2, prob_heavy_truck=0.15,
+                 prob_medium_truck=0.15, prob_small_truck=0.25,
+                 prob_mini_bus=0.25):
         super().__init__(unique_id, model, length, name, road_name)
         # the followings are increasing threshold characteristics for each road
         # The threshold are used to create the different kinds of vehicles
@@ -189,7 +196,6 @@ class Source(Infra):
         self.prob_medium_truck = prob_medium_truck + self.prob_heavy_truck
         self.prob_small_truck = prob_small_truck + self.prob_medium_truck
         self.prob_mini_bus = prob_mini_bus + self.prob_small_truck
-
 
     def step(self):
         if self.model.schedule.steps % self.generation_frequency == 0:
@@ -227,6 +233,7 @@ class Source(Infra):
         """
         try:
             # agent = Vehicle('Truck' + str(Source.truck_counter), self.model, self)
+            # get a random Vehicle
             agent = self.create_a_vehicle()
             if agent:
                 self.model.schedule.add(agent)
@@ -292,11 +299,11 @@ class Vehicle(Agent):
     """
 
     # 48 km/h translated into meter per min
-    normal_speed = 48 * 1000 / 60 # average speed for this kind of vehicle
+    normal_speed = 48 * 1000 / 60  # average speed for this kind of vehicle
     # One tick represents 1 minute
     step_time = 1
     # average length of a vehicle
-    length = 7.891 #TODO: this is in meter, are the rest of the distances in meter as well?
+    length = 7.891  # TODO: this is in meter, are the rest of the distances in meter as well?
     # max amount of goods that can be carried
     max_goods = 0
 
@@ -320,8 +327,8 @@ class Vehicle(Agent):
         self.waited_at = None
         self.removed_at_step = None
         self.accumulated_waiting_time = 0  # counter for the total waiting time
-        self.speed = self.__class__.normal_speed # to take track of the velocity of this vehicle: vehicle's velocity can change!
-        self.has_velocity_decreased = False # to take track if the velocity of this vehicle has changed (we don't want the velocity to change too much)
+        self.speed = self.__class__.normal_speed  # to take track of the velocity of this vehicle: vehicle's velocity can change!
+        self.has_velocity_decreased = False  # to take track if the velocity of this vehicle has changed (we don't want the velocity to change too much)
         self.has_velocity_increased = False
 
     def __str__(self):
@@ -361,9 +368,9 @@ class Vehicle(Agent):
         """
         Enumeration used to communicate whether there is the need to change velocity of this vehicle
         """
-        no_change = 0 # no need to change the velocity
-        slow_down = 1 # velocity needs to decrease
-        speed_up = 2 # velocity can be increased
+        no_change = 0  # no need to change the velocity
+        slow_down = 1  # velocity needs to decrease
+        speed_up = 2  # velocity can be increased
 
     def is_to_change_velocity(self):
         """
@@ -407,7 +414,7 @@ class Vehicle(Agent):
         @return: the increased velocity this vehicle could go
         """
         # increase the velocity by 20%
-        return self.speed * 1.2 # TODO: find a reason why putting 20%?
+        return self.speed * 1.2  # TODO: find a reason why putting 20%?
 
     def get_new_velocity_slower(self):
         """
@@ -422,7 +429,7 @@ class Vehicle(Agent):
         # the distance that vehicle drives in a tick
         # speed is global now: can change to instance object when individual speed is needed
 
-        #distance = Vehicle.normal_speed * Vehicle.step_time
+        # distance = Vehicle.normal_speed * Vehicle.step_time
 
         # in case there is the need to change velocity, do so
         is_to_change_velocity = self.is_to_change_velocity()
@@ -495,7 +502,7 @@ class Vehicle(Agent):
             return
         elif isinstance(next_infra, Bridge):
             self.waiting_time = next_infra.get_delay_time()
-            #self.waiting_time = next_infra.get_delay_time_traffic_jam()
+            # self.waiting_time = next_infra.get_delay_time_traffic_jam()
             next_infra.last_vehicle_arrived = self
             if self.waiting_time > 0:
                 # arrive at the bridge and wait
@@ -533,54 +540,67 @@ class Vehicle(Agent):
         # so reset the variable that takes track of the last given waiting time
         if isinstance(self.location, Bridge) and self.location.vehicle_count == 0:
             self.location.last_delay_time_given = 0
-            #self.location.last_vehicle_arrived = None
+            # self.location.last_vehicle_arrived = None
 
         self.location = next_infra
         self.location_offset = location_offset
         self.location.vehicle_count += 1
 
 
-
-
 class LargeBus(Vehicle):
-    # 37 km/h translated into meter per min
-    #normal_speed = 37 * 1000 / 60
-    normal_speed = 45 * 1000 / 60
-    #normal_speed = 0.0005 * 1000 / 60
+    '''
+    This class represents a large bus
+    '''
+    # normal_speed = 37 * 1000 / 60
+    normal_speed = 45 * 1000 / 60  # 45 km/h translated into meter per min
+    # normal_speed = 0.0005 * 1000 / 60
     max_goods = 9795
     length = 11.080
 
+
 class HeavyTruck(Vehicle):
-    # 31 km/h translated into meter per min
-    #normal_speed = 31 * 1000 / 60
-    normal_speed = 41 * 1000 / 60
-    #normal_speed = 0.0005 * 1000 / 60
+    '''
+    This class represents an heavy truck
+    '''
+    # normal_speed = 31 * 1000 / 60
+    normal_speed = 41 * 1000 / 60  # 41 km/h translated into meter per min
+    # normal_speed = 0.0005 * 1000 / 60
     max_goods = 18700
     length = 9.010
 
+
 class MediumTruck(Vehicle):
-    # 31 km/h translated into meter per min
-    #normal_speed = 31 * 1000 / 60
-    normal_speed = 41 * 1000 / 60
-    #normal_speed = 0.0005 * 1000 / 60
+    '''
+    This class represents a medium bus
+    '''
+    # normal_speed = 31 * 1000 / 60
+    normal_speed = 41 * 1000 / 60  # 41 km/h translated into meter per min
+    # normal_speed = 0.0005 * 1000 / 60
     max_goods = 10770
     length = 8.395
 
+
 class MiniBus(Vehicle):
-    # 26 km/h translated into meter per min
-    #normal_speed = 26 * 1000 / 60
-    normal_speed = 45 * 1000 / 60
-    #normal_speed = 0.0005 * 1000 / 60
+    '''
+    This class represents a minibus
+    '''
+    # normal_speed = 26 * 1000 / 60
+    normal_speed = 45 * 1000 / 60  # 45 km/h translated into meter per min
+    # normal_speed = 0.0005 * 1000 / 60
     max_goods = 5700
     length = 5.970
 
+
 class SmallTruck(Vehicle):
-    # 29 km/h translated into meter per min
-    #normal_speed = 29 * 1000 / 60
-    normal_speed = 41 * 1000 / 60
-    #normal_speed = 0.0005 * 1000 / 60
+    '''
+    This class represents a small truck
+    '''
+    # normal_speed = 29 * 1000 / 60
+    normal_speed = 41 * 1000 / 60  # 41 km/h translated into meter per min
+    # normal_speed = 0.0005 * 1000 / 60
     max_goods = 3720
     length = 5.000
+
 
 # ---------------------------------------------------------------
 class DataContainer:
@@ -647,39 +667,54 @@ class DataContainer:
         """
         return self.waiting_time_df.copy(deep=True)
 
+
 # -----------------------------------------------------------
 
 def read_traffic_probabilities(source='../data/traffic_probabilities.txt'):
     """
     Reads the traffic probabilities contained in a txt file and returns a dictionary where roads names
     are keys and their corresponding value is a dictionary where for each kind of Vehicle there is the
-    corresponding probability
-    :param source:
-    :return:
+    corresponding probability of being generated in the simulation by a Source
+    @param source: a txt file containing the required probabilities
+    @return: a dictionary of dictionaries
     """
-    # split the strings
+    # prepare the creation of the final results by reading the files and splitting each line into its smaller
+    # components
     file_split = []
     with open(source) as f:  # open the file
         for line in f:  # read all the lines in the file
+            # split each string
             line = line.rstrip('\n')
             road = line.split(',')[0]  # remove the trailing newline
             vehicle = get_vehicle_prob(line.split(',')[1])
             prob = line.split(',')[2]
             file_split.append([road, vehicle, prob])
 
-    result = {}
+    result = {} # the final dictionary
 
-    for el in file_split:
+    # iterate through each split line
+    for el in file_split: # el[0] = road name, el[1] = vehicle type, el[2] = probability
+        # if the current road is already present in the dictionary
         if el[0] in result:
+            # add the probability for the current Vehicle type
             result[el[0]][el[1]] = float(el[2])
-        else:
+        else: # the current road is not present in the dictionary, yet
+            # add the dictionary of the current road and start filling it
             road_dict = {el[1]: float(el[2])}
             result[el[0]] = road_dict
 
     return result
 
+
 def get_vehicle_prob(info):
-    vehicle_type = info.split('-')[1]
+    """
+    Returns the corresponding Vehicle class name to the specified string. This method is needed to do some conversion
+    between different naming conventions
+    @param info: a string containing the name of a Vehicle type
+    @return: the exact name of the Vehicle class corresponding to the specified information
+    """
+    vehicle_type = info.split('-')[1] # get the part of the given string that is about the Vehicle type
+    # find the match
     if vehicle_type == 'Heavy Truck':
         final_key = 'HeavyTruck'
     elif vehicle_type == 'Medium Truck':

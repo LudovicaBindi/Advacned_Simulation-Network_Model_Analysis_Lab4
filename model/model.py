@@ -97,7 +97,8 @@ class BangladeshModel(Model):
 
         self.delay_per_meter = delay_per_meter
 
-        # save the traffic_dict
+        # save the traffic_dict: it is a dictionary containing the probabilities of generating each kind of
+        # Vehicle type per road
         self.traffic_dict = traffic_dict
 
         self.break_prob_min = break_prob_min
@@ -181,8 +182,10 @@ class BangladeshModel(Model):
 
                 if model_type == 'source':
                     if self.traffic_dict is None:
+                        # if we are running the simulation without specific Vehicles generation probabilities
                         agent = Source(row['id'], self, row['length'], name, row['road'])
                     else:
+                        # if we are running the simulation with specific Vehicles generation probabilities
                         road_dict = self.traffic_dict[row['road']]
                         agent = Source(row['id'], self, row['length'], name, row['road'],
                                        road_dict['LargeBus'], road_dict['HeavyTruck'],
@@ -194,8 +197,10 @@ class BangladeshModel(Model):
                     self.sinks.append(agent.unique_id)
                 elif model_type == 'sourcesink':
                     if self.traffic_dict is None:
+                        # if we are running the simulation without specific Vehicles generation probabilities
                         agent = SourceSink(row['id'], self, row['length'], name, row['road'])
                     else:
+                        # if we are running the simulation with specific Vehicles generation probabilities
                         road_dict = self.traffic_dict[row['road']]
                         agent = SourceSink(row['id'], self, row['length'], name, row['road'],
                                        road_dict['LargeBus'], road_dict['HeavyTruck'],
@@ -243,6 +248,12 @@ class BangladeshModel(Model):
         return self.path_ids_dict[source, sink]
 
     def get_route(self, source):
+        """
+        Returns a route from the specified Source. It's either the straight route, a random route, to the closest
+        Sink or to the Sink the farthest away. The route is chosen according to predefined probabilities.
+        @param source: a Source where the route should start from
+        @return: a route from the specified Source
+        """
         #choose a route based on a certain probability
         result = None
         chance = self.random.random()
