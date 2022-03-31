@@ -27,7 +27,7 @@ network = create_network(source_csv='../data/cleaned_roads_' + scenario + '.csv'
 traffic_dict = read_traffic_probabilities(source='../data/traffic_probabilities.txt')
 
 break_prob_min_experiments = [0.01, 0.05, 0.1]
-break_prob_slope_experiments = [1, 2]  # [5, 10]
+break_prob_slope_experiments = [5, 10]
 
 for min_setup in break_prob_min_experiments:
     for slope_setup in break_prob_slope_experiments:
