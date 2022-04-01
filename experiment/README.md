@@ -58,3 +58,7 @@ records this event. Results are saved as a csv.
 |    Bridge id | Unique ID of the bridge                           |
 | Waiting time | Delay time experienced by the truck at the bridge |
 
+## Naming Convention
+
+The way the files are named are scenario_[nameofscenario]_[bridge_break_min][slope]_replication...
+For example: scenario_BCSscore_10.05_replication_0_travel_time.csv etc. 

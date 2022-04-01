@@ -59,9 +59,17 @@ based on input data, outputs saved as csv
 
     In this file, you define simple visualization.
 
-* [model_run.py](old_model_run.py): Sets up the model run (conditions). Calls the model. Run the simulation without visualization. 
+* [model_viz_key_bridges_on_map.py](model_viz_key_bridges_on_map.py): Sets up the visualization; uses the `SimpleCanvas` element defined. Calls the model. Run the visualization server.
+
+    In this file, you define simple visualization. Including key bridges on map.
+
+* [model_run.py](model_run.py): Sets up the model run (conditions). Calls the model. Run the simulation without visualization. 
 
     In this file, you define model batch runs.
+
+* [model_run_scenarios.py](model_run_scenarios.py): Sets up the model run (conditions). Calls the model. Run the simulation without visualization. 
+
+    In this file, you define model batch runs. This one only considers the scenarios we created and is the mainly used. 
   
 * [ContinuousSpace](ContinuousSpace): The directory contains files needed to visualize Python3 Mesa models on a continuous canvas with geo-coordinates, a functionality not contained in the current Mesa package. 
   
